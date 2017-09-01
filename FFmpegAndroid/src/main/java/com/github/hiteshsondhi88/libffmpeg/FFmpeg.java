@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
@@ -12,38 +13,16 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 @SuppressWarnings("unused")
 public class FFmpeg implements FFmpegInterface {
 
-    private final FFmpegContextProvider context;
     private FFmpegExecuteAsyncTask ffmpegExecuteAsyncTask;
     private FFmpegLoadLibraryAsyncTask ffmpegLoadLibraryAsyncTask;
 
     private static final long MINIMUM_TIMEOUT = 10 * 1000;
     private long timeout = Long.MAX_VALUE;
+    private final Context context;
 
-    private static FFmpeg instance = null;
-
-    private FFmpeg(FFmpegContextProvider contextProvider) {
-        this.context = contextProvider;
-        Log.setDEBUG(Util.isDebug(this.context.provide()));
-    }
-
-    public static FFmpeg getInstance(FFmpegContextProvider contextProvider) {
-        if (instance == null) {
-            instance = new FFmpeg(contextProvider);
-        }
-        return instance;
-    }
-
-    @Deprecated
-    public static FFmpeg getInstance(final Context context) {
-        if (instance == null) {
-            instance = new FFmpeg(new FFmpegContextProvider() {
-                @Override
-                public Context provide() {
-                    return context;
-                }
-            });
-        }
-        return instance;
+    public FFmpeg(Context context) {
+        Log.setDEBUG(Util.isDebug(context));
+        this.context = context.getApplicationContext();
     }
 
     @Override
@@ -76,7 +55,7 @@ public class FFmpeg implements FFmpegInterface {
             throw new FFmpegCommandAlreadyRunningException("FFmpeg command is already running, you are only allowed to run single command at a time");
         }
         if (cmd.length != 0) {
-            String[] ffmpegBinary = new String[] { FileUtils.getFFmpeg(context.provide(), environvenmentVars) };
+            String[] ffmpegBinary = new String[] { FileUtils.getFFmpeg(context, environvenmentVars) };
             String[] command = concatenate(ffmpegBinary, cmd);
             ffmpegExecuteAsyncTask = new FFmpegExecuteAsyncTask(command , timeout, ffmpegExecuteResponseHandler);
             ffmpegExecuteAsyncTask.execute();
@@ -105,7 +84,7 @@ public class FFmpeg implements FFmpegInterface {
     @Override
     public String getDeviceFFmpegVersion() throws FFmpegCommandAlreadyRunningException {
         ShellCommand shellCommand = new ShellCommand();
-        CommandResult commandResult = shellCommand.runWaitFor(new String[] { FileUtils.getFFmpeg(context.provide()), "-version" });
+        CommandResult commandResult = shellCommand.runWaitFor(new String[] { FileUtils.getFFmpeg(context), "-version" });
         if (commandResult.success) {
             return commandResult.output.split(" ")[2];
         }
@@ -115,7 +94,7 @@ public class FFmpeg implements FFmpegInterface {
 
     @Override
     public String getLibraryFFmpegVersion() {
-        return context.provide().getString(R.string.shipped_ffmpeg_version);
+        return context.getString(R.string.shipped_ffmpeg_version);
     }
 
     @Override
@@ -128,6 +107,28 @@ public class FFmpeg implements FFmpegInterface {
         boolean status = Util.killAsync(ffmpegLoadLibraryAsyncTask) || Util.killAsync(ffmpegExecuteAsyncTask);
         ffmpegExecuteAsyncTask = null;
         return status;
+    }
+
+    public void killProcess() {
+        if (ffmpegExecuteAsyncTask != null) {
+            int pid = getPid(ffmpegExecuteAsyncTask.getProcess());
+            if (pid != -1)
+                android.os.Process.sendSignal(pid, 15);
+        }
+    }
+
+    private static int getPid(Process p) {
+        int pid;
+
+        try {
+            Field f = p.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+            pid = f.getInt(p);
+            f.setAccessible(false);
+        } catch (Throwable e) {
+            pid = -1;
+        }
+        return pid;
     }
 
     @Override

@@ -24,6 +24,10 @@ class FFmpegExecuteAsyncTask extends AsyncTask<Void, String, CommandResult> {
         this.shellCommand = new ShellCommand();
     }
 
+    public Process getProcess() {
+        return process;
+    }
+
     @Override
     protected void onPreExecute() {
         startTime = System.currentTimeMillis();
