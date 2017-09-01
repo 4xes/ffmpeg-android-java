@@ -13,7 +13,7 @@ public class App extends Application {
 
     public static FFmpeg getFFmpegInstance() {
         if (instance == null) {
-            instance = new FFmpeg(context);
+            instance = FFmpeg.getInstance(context);
         }
         return instance;
     }
