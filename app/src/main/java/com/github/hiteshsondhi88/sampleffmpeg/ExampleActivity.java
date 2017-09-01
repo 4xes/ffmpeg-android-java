@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,11 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import javax.inject.Inject;
-
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
-import dagger.ObjectGraph;
 
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
@@ -26,30 +22,32 @@ import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 
-public class Home extends Activity implements View.OnClickListener {
+public class ExampleActivity extends Activity implements View.OnClickListener {
 
-    private static final String TAG = Home.class.getSimpleName();
+    private static final String TAG = ExampleActivity.class.getSimpleName();
 
-    @Inject
-    FFmpeg ffmpeg;
 
-    @InjectView(R.id.command)
+    @BindView(R.id.command)
     EditText commandEditText;
 
-    @InjectView(R.id.command_output)
+    @BindView(R.id.command_output)
     LinearLayout outputLayout;
 
-    @InjectView(R.id.run_command)
+    @BindView(R.id.run_command)
     Button runButton;
 
+    FFmpeg ffmpeg;
+
     private ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        ButterKnife.inject(this);
-        ObjectGraph.create(new DaggerDependencyModule(this)).inject(this);
+        ButterKnife.bind(this);
+
+        ffmpeg = App.getFFmpegInstance();
 
         loadFFMpegBinary();
         initUI();
@@ -116,13 +114,13 @@ public class Home extends Activity implements View.OnClickListener {
     }
 
     private void addTextViewToLayout(String text) {
-        TextView textView = new TextView(Home.this);
+        TextView textView = new TextView(this);
         textView.setText(text);
         outputLayout.addView(textView);
     }
 
     private void showUnsupportedExceptionDialog() {
-        new AlertDialog.Builder(Home.this)
+        new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(getString(R.string.device_not_supported))
                 .setMessage(getString(R.string.device_not_supported_message))
@@ -130,7 +128,7 @@ public class Home extends Activity implements View.OnClickListener {
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Home.this.finish();
+                        finish();
                     }
                 })
                 .create()
@@ -147,7 +145,7 @@ public class Home extends Activity implements View.OnClickListener {
                 if (command.length != 0) {
                     execFFmpegBinary(command);
                 } else {
-                    Toast.makeText(Home.this, getString(R.string.empty_command_toast), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.empty_command_toast), Toast.LENGTH_LONG).show();
                 }
                 break;
         }
