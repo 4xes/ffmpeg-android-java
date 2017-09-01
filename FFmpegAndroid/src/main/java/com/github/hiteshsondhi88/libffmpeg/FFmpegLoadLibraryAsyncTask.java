@@ -9,9 +9,9 @@ class FFmpegLoadLibraryAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
     private final String cpuArchNameFromAssets;
     private final FFmpegLoadBinaryResponseHandler ffmpegLoadBinaryResponseHandler;
-    private final FFmpegContextProvider context;
+    private final Context context;
 
-    FFmpegLoadLibraryAsyncTask(FFmpegContextProvider context, String cpuArchNameFromAssets, FFmpegLoadBinaryResponseHandler ffmpegLoadBinaryResponseHandler) {
+    FFmpegLoadLibraryAsyncTask(Context context, String cpuArchNameFromAssets, FFmpegLoadBinaryResponseHandler ffmpegLoadBinaryResponseHandler) {
         this.context = context;
         this.cpuArchNameFromAssets = cpuArchNameFromAssets;
         this.ffmpegLoadBinaryResponseHandler = ffmpegLoadBinaryResponseHandler;
@@ -19,12 +19,12 @@ class FFmpegLoadLibraryAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        File ffmpegFile = new File(FileUtils.getFFmpeg(context.provide()));
+        File ffmpegFile = new File(FileUtils.getFFmpeg(context));
         if (ffmpegFile.exists() && isDeviceFFmpegVersionOld() && !ffmpegFile.delete()) {
             return false;
         }
         if (!ffmpegFile.exists()) {
-            boolean isFileCopied = FileUtils.copyBinaryFromAssetsToData(context.provide(),
+            boolean isFileCopied = FileUtils.copyBinaryFromAssetsToData(context,
                     cpuArchNameFromAssets + File.separator + FileUtils.ffmpegFileName,
                     FileUtils.ffmpegFileName);
 
@@ -58,6 +58,6 @@ class FFmpegLoadLibraryAsyncTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     private boolean isDeviceFFmpegVersionOld() {
-        return CpuArch.fromString(FileUtils.SHA1(FileUtils.getFFmpeg(context.provide()))).equals(CpuArch.NONE);
+        return CpuArch.fromString(FileUtils.SHA1(FileUtils.getFFmpeg(context))).equals(CpuArch.NONE);
     }
 }

@@ -28,13 +28,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    splits {
+        abi {
+            enable true
+
+            reset()
+
+            include "x86", "armeabi", "armeabi-v7a"
+            universalApk false
+        }
+    }
 }
 
 dependencies {
-    compile 'com.squareup.dagger:dagger-compiler:1.2.2'
-    compile 'com.squareup.dagger:dagger:1.2.2'
-    compile 'com.jakewharton:butterknife:5.1.2'
+    compile 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile 'com.squareup.assertj:assertj-android:1.0.0'
+    androidTestCompile 'com.squareup.assertj:assertj-android:1.1.1'
     compile project(':FFmpegAndroid')
 }

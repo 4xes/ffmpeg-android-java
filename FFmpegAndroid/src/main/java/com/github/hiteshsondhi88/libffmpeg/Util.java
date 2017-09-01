@@ -3,6 +3,7 @@ package com.github.hiteshsondhi88.libffmpeg;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
+import android.os.Handler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +21,7 @@ class Util {
         if (inputStream != null) {
             try {
                 inputStream.close();
-            } catch (IOException e) {
-                // Do nothing
+            } catch (IOException ignored) {
             }
         }
     }
@@ -31,8 +31,7 @@ class Util {
             try {
                 outputStream.flush();
                 outputStream.close();
-            } catch (IOException e) {
-                // Do nothing
+            } catch (IOException ignored) {
             }
         }
     }
@@ -82,7 +81,7 @@ class Util {
     }
 
     public static FFmpegObserver observeOnce(final ObservePredicate predicate, final Runnable run, final int timeout) {
-        final android.os.Handler observer = new android.os.Handler();
+        final Handler observer = new Handler();
 
         // Enable this to detect neverending observers
 //        final Exception e = new RuntimeException("WTF");
