@@ -19,10 +19,18 @@ public class FFmpeg implements FFmpegInterface {
     private static final long MINIMUM_TIMEOUT = 10 * 1000;
     private long timeout = Long.MAX_VALUE;
     private final Context context;
+    private static FFmpeg instance;
 
-    public FFmpeg(Context context) {
+    private FFmpeg(Context context) {
         Log.setDEBUG(Util.isDebug(context));
         this.context = context.getApplicationContext();
+    }
+
+    public static FFmpeg getInstance(Context context) {
+        if (instance == null) {
+            instance = new FFmpeg(context);
+        }
+        return instance;
     }
 
     @Override
@@ -99,7 +107,7 @@ public class FFmpeg implements FFmpegInterface {
 
     @Override
     public boolean isFFmpegCommandRunning() {
-        return ffmpegExecuteAsyncTask != null || !ffmpegExecuteAsyncTask.isProcessCompleted();
+        return ffmpegExecuteAsyncTask != null && !ffmpegExecuteAsyncTask.isProcessCompleted();
     }
 
     @Override
