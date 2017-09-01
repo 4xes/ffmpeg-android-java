@@ -15,7 +15,7 @@ import java.util.Map;
 
 class FileUtils {
 
-    static final String ffmpegFileName = "ffmpeg";
+    static final String ffmpegFileName = "lib_ffmpeg.so";
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
     private static final int EOF = -1;
 
@@ -26,6 +26,7 @@ class FileUtils {
 		
 		InputStream is;
 		try {
+		    android.util.Log.e(ffmpegFileName, fileNameFromAssets.toString());
 			is = context.getAssets().open(fileNameFromAssets);
 			// copy ffmpeg file from assets to files dir
 			final FileOutputStream os = new FileOutputStream(new File(filesDirectory, outputFileName));
@@ -46,13 +47,18 @@ class FileUtils {
         return false;
 	}
 
-	static File getFilesDirectory(Context context) {
+    private static File getLibDirectory(Context context) {
+        File dataDir = new File(context.getFilesDir().getParent());
+        return new File(dataDir.getAbsolutePath(), "lib");
+    }
+
+	private static File getFilesDirectory(Context context) {
 		// creates files directory under data/data/package name
         return context.getFilesDir();
 	}
 
     static String getFFmpeg(Context context) {
-        return getFilesDirectory(context).getAbsolutePath() + File.separator + FileUtils.ffmpegFileName;
+        return getLibDirectory(context).getAbsolutePath() + File.separator + FileUtils.ffmpegFileName;
     }
 
     static String getFFmpeg(Context context, Map<String,String> environmentVars) {
