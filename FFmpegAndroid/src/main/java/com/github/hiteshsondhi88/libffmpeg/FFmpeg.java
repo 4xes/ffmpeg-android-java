@@ -33,6 +33,17 @@ public class FFmpeg implements FFmpegInterface {
         return instance;
     }
 
+    public static boolean checkSupport() {
+        switch (CpuArchHelper.getCpuArch()) {
+            case x86:
+                return true;
+            case ARMv7:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     @Override
     public void loadBinary(FFmpegLoadBinaryResponseHandler ffmpegLoadBinaryResponseHandler) throws FFmpegNotSupportedException {
         String cpuArchNameFromAssets = null;
